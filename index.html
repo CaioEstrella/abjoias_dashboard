@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABJoias - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <h2>Carregando dados da ABJoias...</h2>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+            <p id="loading-text">Inicializando...</p>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">ABJoias</h1>
+                <button id="theme-toggle" class="btn btn--secondary">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Filtros -->
+            <section class="filters-section">
+                <h2>Filtros</h2>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="form-label">Estados</label>
+                        <div id="estado-filters" class="checkbox-group"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">Cidades</label>
+                        <div id="cidade-filters" class="checkbox-group"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">Status</label>
+                        <div id="status-filters" class="checkbox-group"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">Forma de Pagamento</label>
+                        <div id="pagamento-filters" class="checkbox-group"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label class="form-label">Cliente</label>
+                        <div class="autocomplete-container">
+                            <input type="text" id="cliente-search" class="form-control" placeholder="Buscar por nome..." autocomplete="off">
+                            <div id="autocomplete-list" class="autocomplete-list"></div>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button id="clear-filters" class="btn btn--outline">Limpar Filtros</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KPIs -->
+            <section class="kpis-section">
+                <div class="kpis-grid">
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Vendas Totais</h3>
+                            <p id="vendas-totais" class="kpi-value">R$ 0,00</p>
+                        </div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Total de Pedidos</h3>
+                            <p id="total-pedidos" class="kpi-value">0</p>
+                        </div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Ticket Médio</h3>
+                            <p id="ticket-medio" class="kpi-value">R$ 0,00</p>
+                        </div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Clientes Ãnicos</h3>
+                            <p id="clientes-unicos" class="kpi-value">0</p>
+                        </div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Valor Total de Envio</h3>
+                            <p id="valor-envio" class="kpi-value">R$ 0,00</p>
+                        </div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Valor Total de Desconto</h3>
+                            <p id="valor-desconto" class="kpi-value">R$ 0,00</p>
+                        </div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Aniversariantes do Mês</h3>
+                            <p id="aniversariantes-mes" class="kpi-value">0</p>
+                            <button id="ver-aniversariantes" class="btn btn--sm btn--secondary mt-8">Ver Lista</button>
+                        </div>
+                    </div>
+                    <!-- NOVO KPI: Total de Itens -->
+                    <div class="card kpi-card">
+                        <div class="card__body">
+                            <h3>Total de Itens</h3>
+                            <p id="total-itens" class="kpi-value">0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráficos -->
+            <section class="charts-section">
+                <h2>Análises</h2>
+                <div class="charts-grid">
+                    <div class="card chart-card">
+                        <div class="card__body">
+                            <h3>Vendas por Estado</h3>
+                            <canvas id="vendas-estado-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card__body">
+                            <h3>Formas de Pagamento</h3>
+                            <canvas id="pagamento-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <div class="card__body">
+                            <h3>Produtos Mais Vendidos</h3>
+                            <canvas id="produtos-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card chart-full-width">
+                        <div class="card__body">
+                            <h3>Tendência de Vendas por Mês</h3>
+                            <canvas id="tendencia-chart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card chart-full-width">
+                        <div class="card__body">
+                            <h3>Evolução Mensal por Ano</h3>
+                            <canvas id="evolucao-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Top Clientes -->
+            <section class="top-clientes-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2>Top Clientes</h2>
+                    <select id="top-clientes-select" class="form-control" style="width: auto;">
+                        <option value="10">Top 10</option>
+                        <option value="25">Top 25</option>
+                        <option value="50">Top 50</option>
+                        <option value="100">Top 100</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Posição</th>
+                                    <th>Nome</th>
+                                    <th>Cidade</th>
+                                    <th>Estado</th>
+                                    <th>Total Gasto</th>
+                                    <th>Qtd Pedidos</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-clientes-tbody">
+                                <!-- Dados serão inseridos dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Cliente -->
+    <div id="cliente-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-cliente-nome">Detalhes do Cliente</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="cliente-info" class="cliente-info"></div>
+                <h4>Histórico de Compras</h4>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Pedido</th>
+                                <th>Produto</th>
+                                <th>Quantidade</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-compras-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Aniversariantes -->
+    <div id="aniversariantes-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Aniversariantes do Mês</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Cidade</th>
+                                <th>Estado</th>
+                                <th>Data Nascimento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aniversariantes-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
