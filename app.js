@@ -53,6 +53,9 @@ function initializeEventListeners() {
     document.getElementById('cliente-search').addEventListener('blur', hideAutocompleteDelayed);
     document.getElementById('top-clientes-select').addEventListener('change', updateTopClientes);
     document.getElementById('ver-aniversariantes').addEventListener('click', showAniversariantesModal);
+    //document.getElementById('ano-filter').addEventListener('change', filterData);
+    //document.getElementById('mes-filter').addEventListener('change', filterData);
+
     
     // Modal event listeners
     const clienteModal = document.getElementById('cliente-modal');
@@ -159,6 +162,26 @@ async function loadAllData() {
 
 // Initialize filters
 function initializeFilters() {
+    const anos = [...new Set(allData
+        .filter(item => item.data_criacao)
+        .map(item => new Date(item.data_criacao).getFullYear())
+    )].sort((a, b) => b - a);
+    
+    const meses = [
+        { value: '01', label: 'Janeiro' },
+        { value: '02', label: 'Fevereiro' },
+        { value: '03', label: 'Março' },
+        { value: '04', label: 'Abril' },
+        { value: '05', label: 'Maio' },
+        { value: '06', label: 'Junho' },
+        { value: '07', label: 'Julho' },
+        { value: '08', label: 'Agosto' },
+        { value: '09', label: 'Setembro' },
+        { value: '10', label: 'Outubro' },
+        { value: '11', label: 'Novembro' },
+        { value: '12', label: 'Dezembro' },
+    ];
+    
     const estados = [...new Set(allData.map(item => item.endereco_estado))].filter(Boolean).sort();
     const cidades = [...new Set(allData.map(item => item.endereco_cidade))].filter(Boolean).sort();
     const status = [...new Set(allData.map(item => item.situacao))].filter(Boolean).sort();
@@ -168,38 +191,48 @@ function initializeFilters() {
     createCheckboxFilters('cidade-filters', cidades, 'cidade');
     createCheckboxFilters('status-filters', status, 'status');
     createCheckboxFilters('pagamento-filters', pagamentos, 'pagamento');
+    createCheckboxFilters('ano-filters', anos, 'ano');
+    createCheckboxFilters('mes-filters', meses.map(m => m.value), 'mes');
+
 }
 
 function createCheckboxFilters(containerId, options, filterType) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
-    
+
     options.forEach(option => {
         const checkboxItem = document.createElement('div');
         checkboxItem.className = 'checkbox-item';
-        
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `${filterType}-${option}`;
         checkbox.value = option;
+
+        // Aqui estava faltando fechar corretamente
         checkbox.addEventListener('change', () => {
             if (filterType === 'estado' || filterType === 'cidade') {
                 updateLocationFilters();
             } else if (filterType === 'status' || filterType === 'pagamento') {
                 updateStatusPaymentFilters();
             }
+
+            // Sempre aplicar filtro
             filterData();
         });
-        
+
         const label = document.createElement('label');
         label.htmlFor = checkbox.id;
-        label.textContent = option;
-        
+        const value = typeof option === 'object' ? option.value : option;
+        const labelText = typeof option === 'object' ? option.label : option;
+        label.textContent = labelText;
+
         checkboxItem.appendChild(checkbox);
         checkboxItem.appendChild(label);
         container.appendChild(checkboxItem);
     });
 }
+
 
 // Interconnected filters logic
 function updateLocationFilters() {
@@ -371,15 +404,52 @@ function filterData() {
     const selectedStatus = getSelectedCheckboxValues('status-filters');
     const selectedPagamentos = getSelectedCheckboxValues('pagamento-filters');
     const clienteSearch = document.getElementById('cliente-search').value.toLowerCase();
-    
+    const selectedAnos = getSelectedCheckboxValues('ano-filters');
+    const selectedMeses = getSelectedCheckboxValues('mes-filters');
+
+
+
+    // Filtro de anos
+    const anos = [...new Set(allData
+        .filter(item => item.data_criacao)
+        .map(item => new Date(item.data_criacao).getFullYear())
+    )].sort((a, b) => b - a);
+
+    // Filtro de meses fixo
+    const meses = [
+        { value: '01', label: 'Janeiro' },
+        { value: '02', label: 'Fevereiro' },
+        { value: '03', label: 'Março' },
+        { value: '04', label: 'Abril' },
+        { value: '05', label: 'Maio' },
+        { value: '06', label: 'Junho' },
+        { value: '07', label: 'Julho' },
+        { value: '08', label: 'Agosto' },
+        { value: '09', label: 'Setembro' },
+        { value: '10', label: 'Outubro' },
+        { value: '11', label: 'Novembro' },
+        { value: '12', label: 'Dezembro' },
+    ];
+
+    //createCheckboxFilters('ano-filters', anos, 'ano');
+    //createCheckboxFilters('mes-filters', meses.map(m => m.value), 'mes');
+
+
     filteredData = allData.filter(item => {
         const estadoMatch = selectedEstados.length === 0 || selectedEstados.includes(item.endereco_estado);
         const cidadeMatch = selectedCidades.length === 0 || selectedCidades.includes(item.endereco_cidade);
         const statusMatch = selectedStatus.length === 0 || selectedStatus.includes(item.situacao);
         const pagamentoMatch = selectedPagamentos.length === 0 || selectedPagamentos.includes(item.pagamento_bandeira);
         const clienteMatch = clienteSearch === '' || item.cliente_nome.toLowerCase().includes(clienteSearch);
+        const dataPedido = item.data_criacao ? new Date(item.data_criacao) : null;
+        const anoMatch = selectedAnos.length === 0 || (dataPedido && selectedAnos.includes(dataPedido.getFullYear().toString()));
+        const mesMatch = selectedMeses.length === 0 || (dataPedido && selectedMeses.includes(String(dataPedido.getMonth() + 1).padStart(2, '0')));
+
+
         
-        return estadoMatch && cidadeMatch && statusMatch && pagamentoMatch && clienteMatch;
+        //return estadoMatch && cidadeMatch && statusMatch && pagamentoMatch && clienteMatch;
+        return estadoMatch && cidadeMatch && statusMatch && pagamentoMatch && clienteMatch && anoMatch && mesMatch;
+
     });
     
     updateDashboard();
